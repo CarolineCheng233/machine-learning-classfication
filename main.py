@@ -1,7 +1,8 @@
 import os.path as osp
 import os
-from .opts import parse
-from .data import DataProcessPipeline, ItemDataset
+# from opts import parse
+from opts import parse
+from data import DataProcessPipeline, ItemDataset
 from torch.utils.data import DataLoader
 
 
