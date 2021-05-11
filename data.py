@@ -29,8 +29,9 @@ class DataProcessPipeline:
     def __call__(self, data):
         result = {}
         if "review_summary" in data:
-            result['summary'] = self.tokenizer(data["review_summary"], truncation=True,
+            result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
                                                padding="max_length", return_tensors="pt")
+        return result
 
 
 class ItemDataset(Dataset):
@@ -45,7 +46,8 @@ class ItemDataset(Dataset):
         self.data_by_keys = dict()
         for key in allowed_keys:
             self.data_by_keys[key] = self.data[key].values
-        self.label2onehot = dict(large=[0, 0, 1], fit=[0, 1, 0], small=[1, 0, 0])
+        # self.label2onehot = dict(large=[0, 0, 1], fit=[0, 1, 0], small=[1, 0, 0])
+        self.label2onehot = dict(large=0, fit=1, small=2)
         if not test_mode:
             self.labels = self.data['fit'].values
             self.one_hot_labels = []

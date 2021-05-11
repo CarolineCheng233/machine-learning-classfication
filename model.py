@@ -10,12 +10,14 @@ class BERT(nn.Module):
         super(BERT, self).__init__()
         self.pretrained = pretrained
         self.freeze = freeze
+        self.init_weights()
 
     def init_weights(self):
         """Initiate the parameters either from existing checkpoint or from
         scratch."""
         if isinstance(self.pretrained, str):
-            self.model = AutoModel.from_pretrained(self.pretrained).to('cuda')
+            # self.model = AutoModel.from_pretrained(self.pretrained).to('cuda')
+            self.model = AutoModel.from_pretrained(self.pretrained)
             # 是否要固定住模型
             # self.model.eval()
             # # self.model.train()
@@ -23,18 +25,18 @@ class BERT(nn.Module):
             raise TypeError('pretrained must be a str')
 
     def forward(self, x):
-
-        if self.freeze:
-            with torch.no_grad():
-                text_out = self.model(**x).pooler_output
-        else:
-            text_out = self.model(**x).pooler_output
+        # if self.freeze:
+        #     with torch.no_grad():
+        #         text_out = self.model(**x).pooler_output
+        # else:
+        #     text_out = self.model(**x).pooler_output
+        text_out = self.model(**x).pooler_output
         return text_out
 
 
 class MLP(nn.Module):
 
-    def __init__(self, layer_num, dims=(1, 1), with_bn=True, act_type='relu', last_w_bnact=False):
+    def __init__(self, layer_num, dims=(1, 1), with_bn=True, act_type='relu', last_w_bnact=False, last_w_softmax=True):
         super().__init__()
         assert layer_num == len(dims) - 1, "unmatched layer parameters!"
         layers = []
@@ -54,36 +56,35 @@ class MLP(nn.Module):
                 layers.append(nn.ReLU())
             else:
                 raise ValueError(f'There is no {act_type} implementation now!')
+        self.last_w_softmax = last_w_softmax
+        if last_w_softmax:
+            self.softmax = nn.Softmax(dim=1)
         self.model = nn.Sequential(*layers)
+        self.init_weight()
 
     def init_weight(self):
         pass
 
     def forward(self, x):
         out = self.model(x)
+        if self.last_w_softmax:
+            out = self.softmax(out)
         return out
 
 
 class Classifier(nn.Module):
-    # bert, mlp, head
+    # bert, mlp
     def __init__(self, bert, mlp):
         super().__init__()
         self.bert = bert
         self.mlp = mlp
-        self.loss = nn.CrossEntropyLoss()
 
-    def forward_train(self, x, label):
-        loss = self.loss(x, label)
-        return loss
-
-    def forward_test(self, x):
-        pass
-
-    def forward(self, x, label=None):
-        if label:
-            return self.forward_train(x, label)
-        else:
-            return self.forward_test(x)
+    def forward(self, summary):
+        for key in summary:
+            summary[key] = summary[key].reshape((-1,) + summary[key].shape[2:])
+        output = self.bert(summary)
+        output = self.mlp(output)
+        return output
 
 
 # optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)

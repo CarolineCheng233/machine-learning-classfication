@@ -1,22 +1,16 @@
 # from .config import *
 from argparse import ArgumentParser
-from mmcv import Config
+from mmcv import Config, DictAction
 
 
 def parse():
     parser = ArgumentParser()
     parser.add_argument('--mode', type=str, required=True, choices=['train', 'eval'])
-    parser.add_argument('--file_name', type=str, required=False)
-    parser.add_argument('--bert_path', type=str, required=False)
-    args = Config.fromfile("config.py")
-    args.merge_from_dict(parser.parse_args())
-    # if "file_name" in arguments:
-    #     args["file_name"] = arguments.file_name
-    # else:
-    #     args["file_name"] = file_name
-    # if "bert_path" in arguments:
-    #     args["bert_path"] = arguments.bert_path
-    # else:
-    #     args["bert_path"] = bert_path
+    parser.add_argument('--cfg', type=str, default='config.py')
+    parser.add_argument("--cfg-options", nargs="+", action=DictAction, default={})
+    args = parser.parse_args()
+    cfgs = Config.fromfile("config.py")
+    cfgs.merge_from_dict(args.cfg_options)
+    cfgs.mode = args.mode
 
-    return args
+    return cfgs
