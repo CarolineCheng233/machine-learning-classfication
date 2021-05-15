@@ -1,6 +1,6 @@
 from opts import parse
 from data import DataProcessPipeline, ItemDataset
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, DistributedSampler
 from model import BERT, MLP, Classifier
 import torch.optim as optim
 import torch.nn as nn
@@ -12,54 +12,67 @@ from mmcv import ProgressBar
 
 from torch.utils.tensorboard import SummaryWriter
 
-from torch.multiprocessing import Process
+import torch.distributed as dist
+import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 
-def train(args):
+def train(rank, args):
+    dist.init_process_group(backend='nccl', init_method='tcp://127.0.0.1:65534',
+                            rank=rank, world_size=args.GPUS)
+    torch.cuda.set_device(rank)
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
-    dataloader = DataLoader(dataset, shuffle=True, batch_size=args.batch_size, pin_memory=True)
+    dataset_sampler = DistributedSampler(dataset)
+    dataloader = DataLoader(dataset, sampler=dataset_sampler, shuffle=True, batch_size=args.batch_size, pin_memory=True)
 
     bert = BERT(pretrained=args.bert_path, freeze=True)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
     model = Classifier(bert, mlp)
+    model.cuda(rank)
+    model = DDP(model, device_ids=[rank])
     loss_fn = nn.CrossEntropyLoss()
-
     optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'])
 
-    writer = SummaryWriter(args.log_path)
-
     best = 0
-    epoch_pb = ProgressBar(args.epochs)
-    epoch_pb.start()
+    if rank == 0:
+        epoch_pb = ProgressBar(args.epochs)
+        epoch_pb.start()
+        writer = SummaryWriter(args.log_path)
     for i in range(args.epochs):
         model.train()
+        dataset_sampler.set_epoch(i)
         iters = len(dataloader)
-        iter_pb = ProgressBar(iters)
-        iter_pb.start()
+        if rank == 0:
+            iter_pb = ProgressBar(iters)
+            iter_pb.start()
         for j, batch in enumerate(dataloader):
-            labels = batch[1]
-            summaries = batch[0]['summary']
+            labels = batch[1].cuda()
+            summaries = batch[0]['summary'].cuda()
             optimizer.zero_grad()
             output = model(summaries)
             loss = loss_fn(output, labels)
-            if j % args.log['iter'] == 0:
+            if rank == 0 and j % args.log['iter'] == 0:
                 print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
-            writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
-            writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
+            if rank == 0:
+                writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
+                writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
             loss.backward()
             optimizer.step()
-            iter_pb.update()
-        epoch_pb.update()
+            if rank == 0:
+                iter_pb.update()
+        if rank == 0:
+            epoch_pb.update()
 
-        accuracy = val(model, data_pipeline, args)
-        writer.add_scalar('accuracy', accuracy, global_step=(i + 1) * iters)
-        if accuracy > best:
-            print(f'save best model at epoch {i}')
-            torch.save(model.state_dict(), args.ckpt_path)
-            best = accuracy
+        dist.barrier()
+        if rank == 0:
+            accuracy = val(model, data_pipeline, args)
+            writer.add_scalar('accuracy', accuracy, global_step=(i + 1) * iters)
+            if accuracy > best:
+                print(f'save best model at epoch {i}')
+                torch.save(model.state_dict(), args.ckpt_path)
+                best = accuracy
 
 
 def val(model, data_pipeline, args):
@@ -113,7 +126,7 @@ def test(args):
 def main():
     args = parse()
     if args.mode == 'train':
-        train(args)
+        mp.spawn(train, nprocs=args.GPUS, args=(args,))
     else:
         test(args)
 

@@ -7,6 +7,7 @@ allowed_keys = ["review_summary"]
 batch_size = 4
 epochs = 5
 save_model = True
+GPUS = 4
 
 
 mlp_layer_num = 3
