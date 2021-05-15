@@ -1,8 +1,12 @@
-file_name = "train.txt"
-bert_path = "/home/chy/projects/mmaction2/work_dirs/bert_model"
+train_file = "data/train_split.txt"
+val_file = "data/val.txt"
+test_file = "data/test.txt"
+bert_path = "bert_model"
+ckpt_path = "ckpt/best_ckpt.pth"
 allowed_keys = ["review_summary"]
 batch_size = 4
 epochs = 5
+save_model = True
 
 
 mlp_layer_num = 3
@@ -16,3 +20,4 @@ last_w_softmax = True
 sgd = dict(lr=0.01, momentum=0.9)
 
 log = dict(iter=2)
+log_path = "log"

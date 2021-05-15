@@ -5,7 +5,7 @@ from mmcv import Config, DictAction
 
 def parse():
     parser = ArgumentParser()
-    parser.add_argument('--mode', type=str, required=True, choices=['train', 'eval'])
+    parser.add_argument('--mode', type=str, required=True, choices=['train', 'test'])
     parser.add_argument('--cfg', type=str, default='config.py')
     parser.add_argument("--cfg-options", nargs="+", action=DictAction, default={})
     args = parser.parse_args()
