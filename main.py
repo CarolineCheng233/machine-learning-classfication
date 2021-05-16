@@ -49,8 +49,10 @@ def train(rank, args):
             iter_pb = ProgressBar(iters)
             iter_pb.start()
         for j, batch in enumerate(dataloader):
-            labels = batch[1]
+            labels = batch[1].cuda()
             summaries = batch[0]['summary']
+            for key in summaries:
+                summaries[key] = summaries[key].cuda()
             optimizer.zero_grad()
             output = model(summaries)
             loss = loss_fn(output, labels)
@@ -87,8 +89,10 @@ def val(model, data_pipeline, args):
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
             label = batch[1].detach().numpy().reshape(-1, 1)
-            summary = batch[0]['summary']
-            output = model(summary).detach().numpy().argmax(1).reshape(-1, 1)
+            summaries = batch[0]['summary']
+            for key in summaries:
+                summaries[key] = summaries[key].cuda()
+            output = model(summaries).detach().numpy().argmax(1).reshape(-1, 1)
             results.append(output)
             labels.append(label)
     labels = np.concatenate(labels, axis=1)
@@ -114,8 +118,10 @@ def test(args):
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
             label = batch[1].detach().numpy().reshape(-1, 1)
-            summary = batch[0]['summary']
-            output = model(summary).detach().numpy().argmax(1).reshape(-1, 1)
+            summaries = batch[0]['summary']
+            for key in summaries:
+                summaries[key] = summaries[key].cuda()
+            output = model(summaries).detach().numpy().argmax(1).reshape(-1, 1)
             results.append(output)
             labels.append(label)
     labels = np.concatenate(labels, axis=1)

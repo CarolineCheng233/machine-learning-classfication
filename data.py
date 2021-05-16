@@ -33,7 +33,6 @@ class DataProcessPipeline:
                                                padding="max_length", return_tensors="pt")
             for key in result['summary']:
                 result['summary'][key] = result['summary'][key].reshape((-1,) + result['summary'][key].shape[2:])
-                result['summary'][key] = result['summary'][key].cuda()
         return result
 
 
@@ -64,7 +63,7 @@ class ItemDataset(Dataset):
         result = dict()
         for key in self.allowed_keys:
             result[key] = self.data_by_keys[key][idx]
-        return self.pipeline(result), self.one_hot_labels[idx].cuda()
+        return self.pipeline(result), self.one_hot_labels[idx]
 
 
 class ItemDataLoader(DataLoader):
