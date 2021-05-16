@@ -6,7 +6,9 @@ import torch.optim as optim
 import torch.nn as nn
 import torch
 
+import os
 import numpy as np
+import subprocess
 
 from mmcv import ProgressBar
 
@@ -17,9 +19,30 @@ import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 
+def init_slurm(args):
+    proc_id = int(os.environ['SLURM_PROCID'])
+    ntasks = int(os.environ['SLURM_NTASKS'])
+    node_list = os.environ['SLURM_NODELIST']
+    num_gpus = torch.cuda.device_count()
+    torch.cuda.set_device(proc_id % num_gpus)
+    addr = subprocess.getoutput(
+        f'scontrol show hostname {node_list} | head -n1')
+    # specify master port
+    if args.port is not None:
+        os.environ['MASTER_PORT'] = str(args.port)
+    elif 'MASTER_PORT' in os.environ:
+        pass  # use MASTER_PORT in the environment variable
+    else:
+        # 29500 is torch.distributed default port
+        os.environ['MASTER_PORT'] = '29500'
+    os.environ['MASTER_ADDR'] = addr
+    os.environ['WORLD_SIZE'] = str(ntasks)
+    os.environ['LOCAL_RANK'] = str(proc_id % num_gpus)
+    os.environ['RANK'] = str(proc_id)
+
+
 def train(rank, args):
-    dist.init_process_group(backend='nccl', init_method='tcp://127.0.0.1:65534',
-                            rank=rank, world_size=args.GPUS)
+    init_slurm(args)
     torch.cuda.set_device(rank)
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)

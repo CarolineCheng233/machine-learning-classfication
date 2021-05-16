@@ -23,3 +23,5 @@ sgd = dict(lr=0.01, momentum=0.9)
 
 log = dict(iter=2)
 log_path = "log"
+
+port = 29600
