@@ -23,8 +23,9 @@ def train(rank, args):
     torch.cuda.set_device(rank)
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
-    dataset_sampler = DistributedSampler(dataset)
-    dataloader = DataLoader(dataset, sampler=dataset_sampler, shuffle=True, batch_size=args.batch_size, pin_memory=True)
+    # dataset_sampler = DistributedSampler(dataset)
+    # dataloader = DataLoader(dataset, sampler=dataset_sampler, shuffle=True, batch_size=args.batch_size, pin_memory=True)
+    dataloader = DataLoader(dataset, shuffle=True, batch_size=args.batch_size, pin_memory=True)
 
     bert = BERT(pretrained=args.bert_path, freeze=True)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
