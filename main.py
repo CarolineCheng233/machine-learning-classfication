@@ -24,7 +24,8 @@ def train(rank, args):
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
     dataset_sampler = DistributedSampler(dataset)
-    dataloader = DataLoader(dataset, sampler=dataset_sampler, shuffle=False, batch_size=args.batch_size, pin_memory=True)
+    dataloader = DataLoader(dataset, sampler=dataset_sampler, shuffle=False, batch_size=args.batch_size,
+                            pin_memory=True, num_workers=args.num_workers)
     # dataloader = DataLoader(dataset, shuffle=True, batch_size=args.batch_size, pin_memory=True)
 
     bert = BERT(pretrained=args.bert_path, freeze=True)
