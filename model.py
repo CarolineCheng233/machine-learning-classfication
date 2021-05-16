@@ -30,6 +30,8 @@ class BERT(nn.Module):
         #         text_out = self.model(**x).pooler_output
         # else:
         #     text_out = self.model(**x).pooler_output
+        # for i in range(len(x)):
+        import pdb; pdb.set_trace()
         text_out = self.model(**x).pooler_output
         return text_out
 
