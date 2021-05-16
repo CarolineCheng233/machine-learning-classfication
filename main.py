@@ -43,7 +43,7 @@ def train(rank, args):
         writer = SummaryWriter(args.log_path)
     for i in range(args.epochs):
         model.train()
-        dataset_sampler.set_epoch(i)
+        # dataset_sampler.set_epoch(i)
         iters = len(dataloader)
         if rank == 0:
             iter_pb = ProgressBar(iters)
