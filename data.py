@@ -29,8 +29,12 @@ class DataProcessPipeline:
     def __call__(self, data):
         result = {}
         if "review_summary" in data:
-            result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
-                                               padding="max_length", return_tensors="pt")
+            try:
+                result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
+                                                   padding="max_length", return_tensors="pt")
+            except AssertionError:
+                print(data['review_summary'])
+                import pdb; pdb.set_trace()
             for key in result['summary']:
                 result['summary'][key] = result['summary'][key].reshape((-1,) + result['summary'][key].shape[2:])
         return result
