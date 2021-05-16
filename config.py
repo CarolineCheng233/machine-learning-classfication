@@ -5,14 +5,14 @@ bert_path = "bert_model"
 ckpt_path = "ckpt/best_ckpt.pth"
 allowed_keys = ["review_summary"]
 batch_size = 32
-num_workers = 10
+num_workers = 5
 epochs = 5
 save_model = True
 GPUS = 2
 
 
 mlp_layer_num = 3
-mlp_dims = (768, 256, 256, 3)
+mlp_dims = (768, 256, 3)
 with_bn = True
 act_type = 'relu'
 last_w_bnact = False
