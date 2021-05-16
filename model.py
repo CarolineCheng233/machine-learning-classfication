@@ -31,7 +31,9 @@ class BERT(nn.Module):
         # else:
         #     text_out = self.model(**x).pooler_output
         # for i in range(len(x)):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
+        print(x.shape)
+        exit(0)
         text_out = self.model(**x).pooler_output
         return text_out
 
