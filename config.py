@@ -11,8 +11,8 @@ save_model = True
 GPUS = 2
 
 
-mlp_layer_num = 3
 mlp_dims = (768, 256, 3)
+mlp_layer_num = len(mlp_dims) - 1
 with_bn = True
 act_type = 'relu'
 last_w_bnact = False
