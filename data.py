@@ -32,9 +32,10 @@ class DataProcessPipeline:
             try:
                 result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
                                                    padding="max_length", return_tensors="pt")
-            except AssertionError:
-                print(data['review_summary'])
-                import pdb; pdb.set_trace()
+            except:
+                data["review_summary"] = 'nan'
+                result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
+                                                   padding="max_length", return_tensors="pt")
             for key in result['summary']:
                 result['summary'][key] = result['summary'][key].reshape((-1,) + result['summary'][key].shape[2:])
         return result
