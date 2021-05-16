@@ -8,7 +8,6 @@ batch_size = 64
 num_workers = 5
 epochs = 5
 save_model = True
-GPUS = 2
 
 
 mlp_dims = (768, 256, 3)
@@ -24,4 +23,3 @@ sgd = dict(lr=0.01, momentum=0.9)
 log = dict(iter=2)
 log_path = "log"
 
-port = 29600
