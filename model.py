@@ -80,8 +80,8 @@ class Classifier(nn.Module):
         self.mlp = mlp
 
     def forward(self, summary):
-        for key in summary:
-            summary[key] = summary[key].reshape((-1,) + summary[key].shape[2:])
+        # for key in summary:
+        #     summary[key] = summary[key].reshape((-1,) + summary[key].shape[2:])
         output = self.bert(summary)
         output = self.mlp(output)
         return output

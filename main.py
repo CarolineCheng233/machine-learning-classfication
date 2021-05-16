@@ -49,8 +49,8 @@ def train(rank, args):
             iter_pb = ProgressBar(iters)
             iter_pb.start()
         for j, batch in enumerate(dataloader):
-            labels = batch[1].cuda()
-            summaries = batch[0]['summary'].cuda()
+            labels = batch[1]
+            summaries = batch[0]['summary']
             optimizer.zero_grad()
             output = model(summaries)
             loss = loss_fn(output, labels)
