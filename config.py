@@ -21,7 +21,7 @@ mlp_layer_num = len(mlp_dims) - 1
 with_bn = True
 act_type = 'relu'
 last_w_bnact = False
-last_w_softmax = True
+last_w_softmax = False
 
 
 sgd = dict(lr=0.01, momentum=0.9)
