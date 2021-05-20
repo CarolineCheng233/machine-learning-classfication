@@ -22,6 +22,6 @@ last_w_softmax = True
 
 sgd = dict(lr=0.01, momentum=0.9)
 
-log = dict(iter=100)
+log = dict(iter=50)
 log_path = "log"
 

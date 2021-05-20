@@ -78,6 +78,7 @@ def train(args):
 
         accuracy = val(model, data_pipeline, args)
         writer.add_scalar('accuracy', accuracy, global_step=(i + 1) * iters)
+        print(f'accuracy at epoch: {i + 1} is {accuracy}')
         if accuracy > best:
             best = accuracy
             if args.save_model:
