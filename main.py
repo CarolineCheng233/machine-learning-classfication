@@ -38,6 +38,14 @@ from torch.utils.tensorboard import SummaryWriter
 #     os.environ['RANK'] = str(proc_id)
 
 
+def focal_loss(logits, labels, gamma):
+    output = F.log_softmax(logits, dim=1)
+    weight = torch.exp(output)
+    weighted_output = (1 - weight) ** gamma * output
+    loss = F.nll_loss(weighted_output, labels)
+    return loss
+
+
 def train(args):
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
@@ -68,8 +76,9 @@ def train(args):
                 summaries[key] = summaries[key].cuda()
             optimizer.zero_grad()
             output = model(summaries)
-            output = F.log_softmax(output) * ratio
-            loss = F.nll_loss(output, labels)
+            # output = F.log_softmax(output, dim=1) * ratio
+            # loss = F.nll_loss(output, labels)
+            loss = focal_loss(output, labels, args.gamma)
             if j % args.log['iter'] == 0:
                 print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
             writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
