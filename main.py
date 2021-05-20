@@ -94,15 +94,15 @@ def val(model, data_pipeline, args):
     labels = []
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
-            label = batch[1].detach().numpy().reshape(-1, 1)
+            label = batch[1].detach().numpy()
             summaries = batch[0]['summary']
             for key in summaries:
                 summaries[key] = summaries[key].cuda()
-            output = model(summaries).detach().cpu().numpy().argmax(1).reshape(-1, 1)
+            output = model(summaries).detach().cpu().numpy().argmax(1)
             results.append(output)
             labels.append(label)
-    labels = np.concatenate(labels, axis=1)
-    results = np.concatenate(results, axis=1)
+    labels = np.concatenate(labels, axis=0)
+    results = np.concatenate(results, axis=0)
     accuracy = sum(labels == results) / len(labels)
     return accuracy
 
@@ -123,15 +123,15 @@ def test(args):
     labels = []
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
-            label = batch[1].detach().numpy().reshape(-1, 1)
+            label = batch[1].detach().numpy()
             summaries = batch[0]['summary']
             for key in summaries:
                 summaries[key] = summaries[key].cuda()
-            output = model(summaries).detach().cpu().numpy().argmax(1).reshape(-1, 1)
+            output = model(summaries).detach().cpu().numpy().argmax(1)
             results.append(output)
             labels.append(label)
-    labels = np.concatenate(labels, axis=1)
-    results = np.concatenate(results, axis=1)
+    labels = np.concatenate(labels, axis=0)
+    results = np.concatenate(results, axis=0)
     accuracy = sum(labels == results) / len(labels)
     return accuracy
 
