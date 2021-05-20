@@ -1,4 +1,4 @@
-train_file = "data/train_split.txt"
+train_file = "data/train_resample.txt"
 val_file = "data/val.txt"
 test_file = "data/test_with_label.txt"
 bert_path = "bert_model"

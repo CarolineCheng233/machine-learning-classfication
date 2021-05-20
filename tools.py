@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 import numpy as np
+from collections import defaultdict
 
 
 def val_split():
@@ -28,10 +29,14 @@ def val_split():
 
 
 def read_val():
-    val = "val.txt"
-    data = pd.read_csv(val)
-    print(data.keys())
-    print(data.values.shape)
+    val = "data/train_resample.txt"
+    file = pd.read_csv(val)
+    data = file.values
+    label = file['fit'].values
+    print(data)
+    print(sum(label == 'small'))
+    print(sum(label == 'fit'))
+    print(sum(label == 'large'))
 
 
 def train_split():
@@ -82,5 +87,34 @@ def split_train_label():
         f.write('\n'.join(label))
 
 
+def resample():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train', type=str, required=True)
+    parser.add_argument('--output', type=str, required=True)
+    parser.add_argument('--number', type=int, required=True)
+    args = parser.parse_args()
+    train, output, number = args.train, args.output, args.number
+    number = number // 3
+    train = pd.read_csv(train)
+    data = train.values
+    label = train['fit'].values
+    split = defaultdict(list)
+    for i, l in enumerate(label):
+        split[l].append(i)
+    split['small'] = np.random.choice(split['small'], number, replace=False)
+    split['fit'] = np.random.choice(split['fit'], number, replace=False)
+    split['large'] = np.random.choice(split['large'], number, replace=False)
+    small = data[split['small']]
+    fit = data[split['fit']]
+    large = data[split['large']]
+    data = np.concatenate((small, fit, large), axis=0)
+    np.random.shuffle(data)
+
+    keys = list(train.keys().values)
+    keys = np.array(keys)
+    df = pd.DataFrame(data, columns=pd.Index(keys))
+    df.to_csv(output, index=False)
+
+
 if __name__ == '__main__':
-    split_train_label()
+    read_val()
