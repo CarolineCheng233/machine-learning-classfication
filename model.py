@@ -58,7 +58,9 @@ class MLP(nn.Module):
         self.model = nn.Sequential(*layers)
 
     def init_weight(self):
-        nn.init.normal_(self.model.weight, std=0.02)
+        for layer in self.model:
+            if isinstance(layer, nn.Linear):
+                nn.init.normal_(layer.weight, std=0.02)
 
     def forward(self, x):
         out = self.model(x)
