@@ -7,8 +7,8 @@ import torch.nn as nn
 import torch
 
 import os
+import os.path as osp
 import numpy as np
-import subprocess
 
 from mmcv import ProgressBar
 
@@ -59,28 +59,30 @@ def train(args):
         iters = len(dataloader)
         iter_pb = ProgressBar(iters)
         iter_pb.start()
-        # for j, batch in enumerate(dataloader):
-        #     labels = batch[1].cuda()
-        #     summaries = batch[0]['summary']
-        #     for key in summaries:
-        #         summaries[key] = summaries[key].cuda()
-        #     optimizer.zero_grad()
-        #     output = model(summaries)
-        #     loss = loss_fn(output, labels)
-        #     if j % args.log['iter'] == 0:
-        #         print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
-        #     writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
-        #     writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
-        #     loss.backward()
-        #     optimizer.step()
-        #     iter_pb.update()
-        # epoch_pb.update()
+        for j, batch in enumerate(dataloader):
+            labels = batch[1].cuda()
+            summaries = batch[0]['summary']
+            for key in summaries:
+                summaries[key] = summaries[key].cuda()
+            optimizer.zero_grad()
+            output = model(summaries)
+            loss = loss_fn(output, labels)
+            if j % args.log['iter'] == 0:
+                print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
+            writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
+            writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
+            loss.backward()
+            optimizer.step()
+            iter_pb.update()
+        epoch_pb.update()
 
         accuracy = val(model, data_pipeline, args)
         writer.add_scalar('accuracy', accuracy, global_step=(i + 1) * iters)
         if accuracy > best:
             print(f'save best model at epoch {i}')
-            torch.save(model.state_dict(), args.ckpt_path)
+            if not osp.exists(args.ckpt_dir):
+                os.makedirs(args.ckpt_dir)
+            torch.save(model.state_dict(), osp.join(args.ckpt_dir, args.ckpt_name))
             best = accuracy
 
 
@@ -92,6 +94,8 @@ def val(model, data_pipeline, args):
 
     results = []
     labels = []
+    val_pb = ProgressBar(len(dataloader))
+    val_pb.start()
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
             label = batch[1].detach().numpy()
@@ -101,6 +105,7 @@ def val(model, data_pipeline, args):
             output = model(summaries).detach().cpu().numpy().argmax(1)
             results.append(output)
             labels.append(label)
+            val_pb.update()
     labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
     accuracy = sum(labels == results) / len(labels)
@@ -116,11 +121,13 @@ def test(args):
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
     model = Classifier(bert, mlp).cuda()
-    model.load_state_dict(torch.load(args.ckpt_path))
+    model.load_state_dict(torch.load(osp.join(args.ckpt_dir, args.ckpt_path)))
     model.eval()
 
     results = []
     labels = []
+    test_pb = ProgressBar(len(dataloader))
+    test_pb.start()
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
             label = batch[1].detach().numpy()
@@ -130,6 +137,7 @@ def test(args):
             output = model(summaries).detach().cpu().numpy().argmax(1)
             results.append(output)
             labels.append(label)
+            test_pb.update()
     labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
     accuracy = sum(labels == results) / len(labels)
