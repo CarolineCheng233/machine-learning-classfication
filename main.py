@@ -54,6 +54,7 @@ def train(args):
     epoch_pb = ProgressBar(args.epochs)
     epoch_pb.start()
     writer = SummaryWriter(args.log_path)
+    import pdb; pdb.set_trace()
     for i in range(args.epochs):
         model.train()
         iters = len(dataloader)
@@ -142,11 +143,10 @@ def test(args):
             test_pb.update()
     labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
-    results = [dataset.idx2label[result] for result in results]
     if not osp.exists(args.result_dir):
         os.makedirs(args.result_dir)
     with open(osp.join(args.result_dir, args.result_name), 'w', encoding='utf-8') as f:
-        f.write('\n'.join(results))
+        f.write('\n'.join([dataset.idx2label[result] for result in results]))
     accuracy = sum(labels == results) / len(labels)
     return accuracy
 
