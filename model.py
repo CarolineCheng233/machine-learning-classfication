@@ -10,29 +10,23 @@ class BERT(nn.Module):
         super(BERT, self).__init__()
         self.pretrained = pretrained
         self.freeze = freeze
-        self.init_weights()
 
-    def init_weights(self):
+    def init_weight(self):
         """Initiate the parameters either from existing checkpoint or from
         scratch."""
         if isinstance(self.pretrained, str):
-            # self.model = AutoModel.from_pretrained(self.pretrained).to('cuda')
             self.model = AutoModel.from_pretrained(self.pretrained)
             # 是否要固定住模型
-            # self.model.eval()
-            # # self.model.train()
         else:
             raise TypeError('pretrained must be a str')
 
     def forward(self, x):
-        # if self.freeze:
-        #     with torch.no_grad():
-        #         text_out = self.model(**x).pooler_output
-        # else:
-        #     text_out = self.model(**x).pooler_output
-        # for i in range(len(x)):
-        # import pdb; pdb.set_trace()
-        text_out = self.model(**x).pooler_output
+        if self.freeze:
+            self.model.eval()
+            with torch.no_grad():
+                text_out = self.model(**x).pooler_output
+        else:
+            text_out = self.model(**x).pooler_output
         return text_out
 
 
@@ -62,10 +56,9 @@ class MLP(nn.Module):
         if last_w_softmax:
             self.softmax = nn.Softmax(dim=1)
         self.model = nn.Sequential(*layers)
-        self.init_weight()
 
     def init_weight(self):
-        pass
+        nn.init.normal_(self.model.weight, std=0.02)
 
     def forward(self, x):
         out = self.model(x)
@@ -80,6 +73,11 @@ class Classifier(nn.Module):
         super().__init__()
         self.bert = bert
         self.mlp = mlp
+        self.init_weight()
+
+    def init_weight(self):
+        self.bert.init_weight()
+        self.mlp.init_weight()
 
     def forward(self, summary):
         # for key in summary:

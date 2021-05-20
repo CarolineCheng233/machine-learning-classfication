@@ -45,7 +45,7 @@ def train(args):
     bert = BERT(pretrained=args.bert_path, freeze=True)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
-    model = Classifier(bert, mlp)
+    model = Classifier(bert, mlp).cuda()
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'])
 
