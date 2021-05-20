@@ -50,5 +50,25 @@ def train_split():
     df.to_csv(train_split, index=False)
 
 
+def integrate_test():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test', type=str, required=True)
+    parser.add_argument('--label', type=str, required=True)
+    parser.add_argument('--output', type=str, required=True)
+    args = parser.parse_args()
+    test, label, output = args.test, args.label, args.output
+    test = pd.read_csv(test)
+    data = test.values
+    number = len(data)
+    with open(label, 'r', encoding='utf-8') as f:
+        label = np.array([line.strip() for line in f]).reshape(number, 1)
+    data = np.concatenate((data, label), axis=1)
+    keys = list(test.keys().values)
+    keys.append('fit')
+    keys = np.array(keys)
+    df = pd.DataFrame(data, columns=pd.Index(keys))
+    df.to_csv(output, index=False)
+
+
 if __name__ == '__main__':
-    train_split()
+    integrate_test()
