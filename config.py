@@ -12,6 +12,8 @@ num_workers = 10
 epochs = 5
 save_model = False
 
+ratio = [5.75, 1, 5.75]
+
 
 bert_freeze = True
 mlp_dims = (768, 256, 3)

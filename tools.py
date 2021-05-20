@@ -70,5 +70,17 @@ def integrate_test():
     df.to_csv(output, index=False)
 
 
+def split_train_label():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train', type=str, required=True)
+    parser.add_argument('--output', type=str, required=True)
+    args = parser.parse_args()
+    train, output = args.train, args.output
+    train = pd.read_csv(train)
+    label = train['fit'].values
+    with open(output, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(label))
+
+
 if __name__ == '__main__':
-    integrate_test()
+    split_train_label()

@@ -5,6 +5,7 @@ from model import BERT, MLP, Classifier
 import torch.optim as optim
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 
 import os
 import os.path as osp
@@ -47,8 +48,9 @@ def train(args):
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
     model = Classifier(bert, mlp).cuda()
-    loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'])
+
+    ratio = torch.tensor(args.ratio).cuda()
 
     best = 0
     epoch_pb = ProgressBar(args.epochs)
@@ -67,7 +69,8 @@ def train(args):
                 summaries[key] = summaries[key].cuda()
             optimizer.zero_grad()
             output = model(summaries)
-            loss = loss_fn(output, labels)
+            output = F.log_softmax(output) * ratio
+            loss = F.nll_loss(output, labels)
             if j % args.log['iter'] == 0:
                 print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
             writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
