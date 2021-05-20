@@ -10,6 +10,7 @@ epochs = 5
 save_model = True
 
 
+bert_freeze = True
 mlp_dims = (768, 256, 3)
 mlp_layer_num = len(mlp_dims) - 1
 with_bn = True
