@@ -79,11 +79,12 @@ def train(args):
         accuracy = val(model, data_pipeline, args)
         writer.add_scalar('accuracy', accuracy, global_step=(i + 1) * iters)
         if accuracy > best:
-            print(f'save best model at epoch {i}')
-            if not osp.exists(args.ckpt_dir):
-                os.makedirs(args.ckpt_dir)
-            torch.save(model.state_dict(), osp.join(args.ckpt_dir, args.ckpt_name))
             best = accuracy
+            if args.save_model:
+                print(f'save best model at epoch {i}')
+                if not osp.exists(args.ckpt_dir):
+                    os.makedirs(args.ckpt_dir)
+                torch.save(model.state_dict(), osp.join(args.ckpt_dir, args.ckpt_name))
 
 
 def val(model, data_pipeline, args):

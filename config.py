@@ -5,10 +5,10 @@ bert_path = "bert_model"
 ckpt_dir = "ckpt"
 ckpt_name = "best_ckpt.pth"
 allowed_keys = ["review_summary"]
-batch_size = 32
-num_workers = 5
+batch_size = 64
+num_workers = 10
 epochs = 5
-save_model = True
+save_model = False
 
 
 bert_freeze = True
@@ -20,7 +20,7 @@ last_w_bnact = False
 last_w_softmax = True
 
 
-sgd = dict(lr=0.001, momentum=0.9)
+sgd = dict(lr=0.01, momentum=0.9)
 
 log = dict(iter=100)
 log_path = "log"
