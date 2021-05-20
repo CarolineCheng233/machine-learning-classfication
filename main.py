@@ -56,7 +56,6 @@ def train(args):
     epoch_pb = ProgressBar(args.epochs)
     epoch_pb.start()
     writer = SummaryWriter(args.log_path)
-    import pdb; pdb.set_trace()
     for i in range(args.epochs):
         model.train()
         iters = len(dataloader)

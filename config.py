@@ -9,7 +9,7 @@ result_name = "test_results.txt"
 allowed_keys = ["review_summary"]
 batch_size = 128
 num_workers = 10
-epochs = 5
+epochs = 3
 save_model = False
 
 ratio = [5.75, 1, 5.75]
