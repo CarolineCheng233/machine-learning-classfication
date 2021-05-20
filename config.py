@@ -7,13 +7,13 @@ ckpt_name = "best_ckpt.pth"
 result_dir = "result"
 result_name = "test_results.txt"
 allowed_keys = ["review_summary"]
-batch_size = 32
+batch_size = 512
 num_workers = 10
 epochs = 5
 save_model = False
 
 
-bert_freeze = False
+bert_freeze = True
 mlp_dims = (768, 256, 3)
 mlp_layer_num = len(mlp_dims) - 1
 with_bn = True

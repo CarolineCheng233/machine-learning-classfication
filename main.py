@@ -41,7 +41,7 @@ def train(args):
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
-                            batch_size=args.batch_size, pin_memory=True)
+                            batch_size=args.batch_size, pin_memory=True, drop_last=False)
 
     bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
@@ -142,6 +142,7 @@ def test(args):
             test_pb.update()
     labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
+    results = [dataset.idx2label[result] for result in results]
     if not osp.exists(args.result_dir):
         os.makedirs(args.result_dir)
     with open(osp.join(args.result_dir, args.result_name), 'w', encoding='utf-8') as f:

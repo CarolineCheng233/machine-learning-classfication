@@ -53,11 +53,12 @@ class ItemDataset(Dataset):
         self.data_by_keys = dict()
         for key in allowed_keys:
             self.data_by_keys[key] = self.data[key].values
-        self.label2onehot = dict(large=0, fit=1, small=2)
+        self.label2idx = dict(large=0, fit=1, small=2)
+        self.idx2label = {0: 'large', 1: 'fit', 2: 'small'}
         self.labels = self.data['fit'].values
         self.one_hot_labels = []
         for label in self.labels:
-            self.one_hot_labels.append(self.label2onehot[label])
+            self.one_hot_labels.append(self.label2idx[label])
         self.one_hot_labels = np.array(self.one_hot_labels)
 
     def __len__(self):
