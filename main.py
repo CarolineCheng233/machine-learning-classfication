@@ -38,12 +38,12 @@ from torch.utils.tensorboard import SummaryWriter
 #     os.environ['RANK'] = str(proc_id)
 
 
-def focal_loss(logits, labels, gamma):
-    output = F.log_softmax(logits, dim=1)
-    weight = torch.exp(output)
-    weighted_output = (1 - weight) ** gamma * output
-    loss = F.nll_loss(weighted_output, labels)
-    return loss
+# def focal_loss(logits, labels, gamma):
+#     output = F.log_softmax(logits, dim=1)
+#     weight = torch.exp(output)
+#     weighted_output = (1 - weight) ** gamma * output
+#     loss = F.nll_loss(weighted_output, labels)
+#     return loss
 
 
 def train(args):
@@ -57,7 +57,6 @@ def train(args):
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
     model = Classifier(bert, mlp).cuda()
     optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'])
-
     ratio = torch.tensor(args.ratio).cuda()
 
     best = 0
@@ -78,7 +77,7 @@ def train(args):
             output = model(summaries)
             # output = F.log_softmax(output, dim=1) * ratio
             # loss = F.nll_loss(output, labels)
-            loss = focal_loss(output, labels, args.gamma)
+            loss = F.cross_entropy(output, labels)
             if j % args.log['iter'] == 0:
                 print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
             writer.add_scalar('loss', loss, global_step=i * iters + j + 1)

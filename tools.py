@@ -29,7 +29,7 @@ def val_split():
 
 
 def read_val():
-    val = "data/train_resample.txt"
+    val = "data/val.txt"
     file = pd.read_csv(val)
     data = file.values
     label = file['fit'].values
