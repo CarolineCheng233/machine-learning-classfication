@@ -75,6 +75,7 @@ def train(args):
                 summaries[key] = summaries[key].cuda()
             optimizer.zero_grad()
             output = model(summaries)
+            import pdb; pdb.set_trace()
             # output = F.log_softmax(output, dim=1) * ratio
             # loss = F.nll_loss(output, labels)
             loss = F.cross_entropy(output, labels)
