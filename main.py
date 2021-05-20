@@ -142,6 +142,10 @@ def test(args):
             test_pb.update()
     labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
+    if not osp.exists(args.result_dir):
+        os.makedirs(args.result_dir)
+    with open(osp.join(args.result_dir, args.result_name), 'w', encoding='utf-8') as f:
+        f.write('\n'.join(results))
     accuracy = sum(labels == results) / len(labels)
     return accuracy
 
@@ -151,7 +155,8 @@ def main():
     if args.mode == 'train':
         train(args)
     else:
-        test(args)
+        accuracy = test(args)
+        print(f'test accuracy : {accuracy}')
 
 
 if __name__ == '__main__':
