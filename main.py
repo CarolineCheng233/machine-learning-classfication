@@ -40,12 +40,13 @@ from torch.utils.tensorboard import SummaryWriter
 def train(args):
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
-    dataloader = DataLoader(dataset, shuffle=True, batch_size=args.batch_size, pin_memory=True)
+    dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
+                            batch_size=args.batch_size, pin_memory=True)
 
     bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
-    model = Classifier(bert, mlp)
+    model = Classifier(bert, mlp).cuda()
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'])
 
@@ -114,7 +115,7 @@ def test(args):
     bert = BERT(pretrained=args.bert_path, freeze=True)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
-    model = Classifier(bert, mlp)
+    model = Classifier(bert, mlp).cuda()
     model.load_state_dict(torch.load(args.ckpt_path))
     model.eval()
 
