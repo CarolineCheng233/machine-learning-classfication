@@ -14,6 +14,7 @@ import numpy as np
 from mmcv import ProgressBar
 
 from torch.utils.tensorboard import SummaryWriter
+from pytorch_pretrained_bert import BertForSequenceClassification
 
 
 # def init_slurm(args):
@@ -52,9 +53,12 @@ def train(args):
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
                             batch_size=args.batch_size, pin_memory=True, drop_last=False)
 
-    bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
-    mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
-              last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
+    # bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
+    bert = BertForSequenceClassification.from_pretrained(
+        'bert-base-english', num_labels=3)
+    # mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
+    #           last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
+    mlp = None
     model = Classifier(bert, mlp).cuda()
     optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'])
     ratio = torch.tensor(args.ratio).cuda()

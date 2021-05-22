@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from transformers import AutoModel
+from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM, BertForSequenceClassification
 
 
 class BERT(nn.Module):
@@ -74,18 +75,18 @@ class Classifier(nn.Module):
     def __init__(self, bert, mlp):
         super().__init__()
         self.bert = bert
-        self.mlp = mlp
+        # self.mlp = mlp
         self.init_weight()
 
     def init_weight(self):
         self.bert.init_weight()
-        self.mlp.init_weight()
+        # self.mlp.init_weight()
 
     def forward(self, summary):
         # for key in summary:
         #     summary[key] = summary[key].reshape((-1,) + summary[key].shape[2:])
         output = self.bert(summary)
-        output = self.mlp(output)
+        # output = self.mlp(output)
         return output
 
 
