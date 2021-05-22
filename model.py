@@ -79,7 +79,8 @@ class Classifier(nn.Module):
         self.init_weight()
 
     def init_weight(self):
-        self.bert.init_weight()
+        if isinstance(self.bert, BERT):
+            self.bert.init_weight()
         # self.mlp.init_weight()
 
     def forward(self, summary):
