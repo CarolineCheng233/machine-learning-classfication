@@ -55,7 +55,7 @@ def train(args):
 
     # bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
     bert = BertForSequenceClassification.from_pretrained(
-        'bert-base-english', num_labels=3)
+        'bert-base-multilingual-cased', num_labels=3)
     # mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
     #           last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
     mlp = None
