@@ -49,7 +49,7 @@ from sklearn.metrics import f1_score
 
 
 def train(args):
-    data_pipeline = DataProcessPipeline(args.allowed_keys)
+    data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
                             batch_size=args.batch_size, pin_memory=True, drop_last=False)
