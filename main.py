@@ -74,7 +74,6 @@ def train(args):
         iter_pb = ProgressBar(iters)
         iter_pb.start()
         for j, batch in enumerate(dataloader):
-            import pdb; pdb.set_trace()
             labels = batch[1].cuda()
             summaries = batch[0]['summary']
             for key in summaries:
