@@ -78,7 +78,7 @@ def train(args):
             labels = batch[1].cuda()
             summaries = batch[0]['summary']
             for key in summaries:
-                summaries[key] = summaries[key].cuda()
+                summaries[key] = summaries[key].squeeze().cuda()
             optimizer.zero_grad()
             output = model(summaries)
             # output = F.log_softmax(output, dim=1) * ratio
