@@ -73,24 +73,25 @@ def train(args):
         iters = len(dataloader)
         iter_pb = ProgressBar(iters)
         iter_pb.start()
-        # for j, batch in enumerate(dataloader):
-        #     labels = batch[1].cuda()
-        #     summaries = batch[0]['summary']
-        #     for key in summaries:
-        #         summaries[key] = summaries[key].cuda()
-        #     optimizer.zero_grad()
-        #     output = model(summaries)
-        #     # output = F.log_softmax(output, dim=1) * ratio
-        #     # loss = F.nll_loss(output, labels)
-        #     loss = F.cross_entropy(output, labels)
-        #     if j % args.log['iter'] == 0:
-        #         print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
-        #     writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
-        #     writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
-        #     loss.backward()
-        #     optimizer.step()
-        #     iter_pb.update()
-        # epoch_pb.update()
+        for j, batch in enumerate(dataloader):
+            import pdb; pdb.set_trace()
+            labels = batch[1].cuda()
+            summaries = batch[0]['summary']
+            for key in summaries:
+                summaries[key] = summaries[key].cuda()
+            optimizer.zero_grad()
+            output = model(summaries)
+            # output = F.log_softmax(output, dim=1) * ratio
+            # loss = F.nll_loss(output, labels)
+            loss = F.cross_entropy(output, labels)
+            if j % args.log['iter'] == 0:
+                print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
+            writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
+            writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
+            loss.backward()
+            optimizer.step()
+            iter_pb.update()
+        epoch_pb.update()
 
         score = val(model, data_pipeline, args)
         writer.add_scalar('accuracy', score, global_step=(i + 1) * iters)
