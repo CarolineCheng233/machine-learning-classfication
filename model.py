@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from transformers import AutoModel
+from pytorch_pretrained_bert import BertForSequenceClassification
 
 
 class BERT(nn.Module):
@@ -85,7 +86,12 @@ class Classifier(nn.Module):
     def forward(self, summary):
         # for key in summary:
         #     summary[key] = summary[key].reshape((-1,) + summary[key].shape[2:])
-        output = self.bert(summary)
+        output = None
+        if isinstance(self.bert, BertForSequenceClassification):
+            seqs, seq_masks, seq_segments = summary['seqs'], summary['seq_masks'], summary['seq_segments']
+            output = self.bert(seqs, seq_masks, seq_segments, labels=None)
+        elif isinstance(self.bert, BERT):
+            output = self.bert(summary)
         # output = self.mlp(output)
         return output
 
