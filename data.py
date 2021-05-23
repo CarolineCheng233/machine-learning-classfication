@@ -29,7 +29,7 @@ class DataPrecessForSingleSentence:
         # 创建多线程池
         # self.pool = ThreadPoolExecutor(max_workers=max_workers)
 
-    def get_input(self, sentence, max_seq_len=100):
+    def get_input(self, sentence, max_seq_len=15):
         """
         通过多线程（因为notebook中多进程使用存在一些问题）的方式对输入文本进行分词、ID化、截断、填充等流程得到最终的可用于模型输入的序列。
 
@@ -107,14 +107,14 @@ class DataProcessPipeline:
             try:
                 # result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
                 #                                    padding="max_length", return_tensors="pt")
-                seqs, seq_masks, seq_segments = self.tokenizer.get_input(data["review_summary"])
-                result['summary'] = dict(seqs=seqs, seq_masks=seq_masks, seq_segments=seq_segments)
+                seq, seq_mask, seq_segment = self.tokenizer.get_input(data["review_summary"])
+                result['summary'] = dict(seqs=seq, seq_masks=seq_mask, seq_segments=seq_segment)
             except:
                 data["review_summary"] = 'nan'
                 # result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
                 #                                    padding="max_length", return_tensors="pt")
-                seqs, seq_masks, seq_segments = self.tokenizer.get_input(data["review_summary"])
-                result['summary'] = dict(seqs=seqs, seq_masks=seq_masks, seq_segments=seq_segments)
+                seq, seq_mask, seq_segment = self.tokenizer.get_input(data["review_summary"])
+                result['summary'] = dict(seqs=seq, seq_masks=seq_mask, seq_segments=seq_segment)
             # for key in result['summary']:
             #     result['summary'][key] = result['summary'][key].reshape((-1,) + result['summary'][key].shape[2:])
         return result

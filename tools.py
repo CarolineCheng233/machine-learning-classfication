@@ -138,5 +138,16 @@ def split_train_val_test():
     test.to_csv(test_file, index=False)
 
 
+def get_text_length():
+    data = pd.read_csv("data/train_split.txt")
+    summary = data['review_summary'].values
+    import pdb; pdb.set_trace()
+    lengths = [len(text.split()) if isinstance(text, str) else len('nan'.split()) for text in summary]
+    avg = sum(lengths) / len(lengths)
+    maximum = max(lengths)
+    print(avg)
+    print(maximum)
+
+
 if __name__ == '__main__':
-    read_val()
+    get_text_length()
