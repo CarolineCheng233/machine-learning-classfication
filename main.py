@@ -116,11 +116,10 @@ def val(model, data_pipeline, args):
     val_pb.start()
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
-            import pdb; pdb.set_trace()
             label = batch[1].detach().numpy()
             summaries = batch[0]['summary']
             for key in summaries:
-                summaries[key] = summaries[key].cuda()
+                summaries[key] = summaries[key].squeeze().cuda()
             output = model(summaries).detach().cpu().numpy().argmax(1)
             results.append(output)
             labels.append(label)
