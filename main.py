@@ -15,6 +15,7 @@ from mmcv import ProgressBar
 
 from torch.utils.tensorboard import SummaryWriter
 from pytorch_pretrained_bert import BertForSequenceClassification
+from sklearn.metrics import f1_score
 
 
 # def init_slurm(args):
@@ -48,7 +49,7 @@ from pytorch_pretrained_bert import BertForSequenceClassification
 
 
 def train(args):
-    data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
+    data_pipeline = DataProcessPipeline(args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
                             batch_size=args.batch_size, pin_memory=True, drop_last=False)
@@ -72,30 +73,30 @@ def train(args):
         iters = len(dataloader)
         iter_pb = ProgressBar(iters)
         iter_pb.start()
-        for j, batch in enumerate(dataloader):
-            labels = batch[1].cuda()
-            summaries = batch[0]['summary']
-            for key in summaries:
-                summaries[key] = summaries[key].cuda()
-            optimizer.zero_grad()
-            output = model(summaries)
-            # output = F.log_softmax(output, dim=1) * ratio
-            # loss = F.nll_loss(output, labels)
-            loss = F.cross_entropy(output, labels)
-            if j % args.log['iter'] == 0:
-                print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
-            writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
-            writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
-            loss.backward()
-            optimizer.step()
-            iter_pb.update()
-        epoch_pb.update()
+        # for j, batch in enumerate(dataloader):
+        #     labels = batch[1].cuda()
+        #     summaries = batch[0]['summary']
+        #     for key in summaries:
+        #         summaries[key] = summaries[key].cuda()
+        #     optimizer.zero_grad()
+        #     output = model(summaries)
+        #     # output = F.log_softmax(output, dim=1) * ratio
+        #     # loss = F.nll_loss(output, labels)
+        #     loss = F.cross_entropy(output, labels)
+        #     if j % args.log['iter'] == 0:
+        #         print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
+        #     writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
+        #     writer.add_scalar('lr', optimizer.param_groups[0]['lr'], global_step=i * iters + j + 1)
+        #     loss.backward()
+        #     optimizer.step()
+        #     iter_pb.update()
+        # epoch_pb.update()
 
-        accuracy = val(model, data_pipeline, args)
-        writer.add_scalar('accuracy', accuracy, global_step=(i + 1) * iters)
-        print(f'accuracy at epoch: {i + 1} is {accuracy}')
-        if accuracy > best:
-            best = accuracy
+        score = val(model, data_pipeline, args)
+        writer.add_scalar('accuracy', score, global_step=(i + 1) * iters)
+        print(f'accuracy at epoch: {i + 1} is {score}')
+        if score > best:
+            best = score
             if args.save_model:
                 print(f'save best model at epoch {i}')
                 if not osp.exists(args.ckpt_dir):
@@ -115,6 +116,7 @@ def val(model, data_pipeline, args):
     val_pb.start()
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
+            import pdb; pdb.set_trace()
             label = batch[1].detach().numpy()
             summaries = batch[0]['summary']
             for key in summaries:
@@ -125,8 +127,9 @@ def val(model, data_pipeline, args):
             val_pb.update()
     labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
-    accuracy = sum(labels == results) / len(labels)
-    return accuracy
+    score = f1_score(labels, results, average='macro')
+    # accuracy = sum(labels == results) / len(labels)
+    return score
 
 
 def test(args):
@@ -161,8 +164,8 @@ def test(args):
         os.makedirs(args.result_dir)
     with open(osp.join(args.result_dir, args.result_name), 'w', encoding='utf-8') as f:
         f.write('\n'.join([dataset.idx2label[result] for result in results]))
-    accuracy = sum(labels == results) / len(labels)
-    return accuracy
+    score = f1_score(labels, results, average='macro')
+    return score
 
 
 def main():

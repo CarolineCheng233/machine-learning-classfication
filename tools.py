@@ -29,14 +29,14 @@ def val_split():
 
 
 def read_val():
-    val = "data/val.txt"
+    val = "data/train_split_2.txt"
     file = pd.read_csv(val)
     data = file.values
     label = file['fit'].values
-    print(data)
-    print(sum(label == 'small'))
-    print(sum(label == 'fit'))
-    print(sum(label == 'large'))
+    print(len(data))
+    print(sum(label == 'small') / len(data))
+    print(sum(label == 'fit') / len(data))
+    print(sum(label == 'large') / len(data))
 
 
 def train_split():
@@ -114,6 +114,28 @@ def resample():
     keys = np.array(keys)
     df = pd.DataFrame(data, columns=pd.Index(keys))
     df.to_csv(output, index=False)
+
+
+def split_train_val_test():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file', type=str, required=True)
+    parser.add_argument('--train_file', type=str, required=True)
+    parser.add_argument('--val_file', type=str, required=True)
+    parser.add_argument('--test_file', type=str, required=True)
+    args = parser.parse_args()
+    file, train_file, val_file, test_file = args.file, args.train_file, args.val_file, args.test_file
+    ratio = np.array([0.7, 0.8, 1.0])
+    file = pd.read_csv(file)
+    data = file.values
+    np.random.shuffle(data)
+    keys = file.keys()
+    numbers = (ratio * len(data)).astype(np.int)
+    train = pd.DataFrame(data[:numbers[0]], columns=keys)
+    val = pd.DataFrame(data[numbers[0]:numbers[1]], columns=keys)
+    test = pd.DataFrame(data[numbers[1]:], columns=keys)
+    train.to_csv(train_file, index=False)
+    val.to_csv(val_file, index=False)
+    test.to_csv(test_file, index=False)
 
 
 if __name__ == '__main__':

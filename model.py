@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 
 from transformers import AutoModel
-from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM, BertForSequenceClassification
 
 
 class BERT(nn.Module):
