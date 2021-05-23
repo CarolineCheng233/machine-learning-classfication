@@ -8,7 +8,7 @@ result_dir = "result"
 result_name = "test_results.txt"
 allowed_keys = ["review_summary"]
 batch_size = 64
-num_workers = 4
+num_workers = 0
 epochs = 20
 save_model = True
 
