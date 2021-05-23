@@ -48,9 +48,9 @@ class DataPrecessForSingleSentence:
         tokens_seq = self.bert_tokenizer.tokenize(sentence)
         # 获取定长序列及其mask
         result = self.trunate_and_pad(tokens_seq, max_seq_len)
-        seq = result[0]
-        seq_mask = result[1]
-        seq_segment = result[2]
+        seq = [result[0]]
+        seq_mask = [result[1]]
+        seq_segment = [result[2]]
         return seq, seq_mask, seq_segment
 
     def trunate_and_pad(self, seq, max_seq_len):
