@@ -27,9 +27,9 @@ class DataPrecessForSingleSentence:
         """
         self.bert_tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased', do_lower_case=True)
         # 创建多线程池
-        self.pool = ThreadPoolExecutor(max_workers=max_workers)
+        # self.pool = ThreadPoolExecutor(max_workers=max_workers)
 
-    def get_input(self, sentences, max_seq_len=100):
+    def get_input(self, sentence, max_seq_len=100):
         """
         通过多线程（因为notebook中多进程使用存在一些问题）的方式对输入文本进行分词、ID化、截断、填充等流程得到最终的可用于模型输入的序列。
 
@@ -45,16 +45,13 @@ class DataPrecessForSingleSentence:
             labels      : 标签取值为{0,1,2}。
         """
         # 切词
-        tokens_seq = list(
-            self.pool.map(self.bert_tokenizer.tokenize, sentences))
+        tokens_seq = self.bert_tokenizer.tokenize(sentence)
         # 获取定长序列及其mask
-        result = list(
-            self.pool.map(self.trunate_and_pad, tokens_seq,
-                          [max_seq_len] * len(tokens_seq)))
-        seqs = [i[0] for i in result]
-        seq_masks = [i[1] for i in result]
-        seq_segments = [i[2] for i in result]
-        return seqs, seq_masks, seq_segments
+        result = self.trunate_and_pad(tokens_seq, max_seq_len)
+        seq = result[0]
+        seq_mask = result[1]
+        seq_segment = result[2]
+        return seq, seq_mask, seq_segment
 
     def trunate_and_pad(self, seq, max_seq_len):
         """
