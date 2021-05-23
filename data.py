@@ -4,6 +4,7 @@ import argparse
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
 from concurrent.futures import ThreadPoolExecutor
+import torch
 
 
 def read():
@@ -51,7 +52,7 @@ class DataPrecessForSingleSentence:
         seq = [result[0]]
         seq_mask = [result[1]]
         seq_segment = [result[2]]
-        return seq, seq_mask, seq_segment
+        return torch.tensor(seq), torch.tensor(seq_mask), torch.tensor(seq_segment)
 
     def trunate_and_pad(self, seq, max_seq_len):
         """
@@ -92,29 +93,29 @@ class DataPrecessForSingleSentence:
 
 class DataProcessPipeline:
 
-    def __init__(self, tokenizer_dir, allowed_keys=["body type"]):
+    def __init__(self, allowed_keys=["body type"]):
         super().__init__()
         if 'fit' in allowed_keys:
             allowed_keys.remove('fit')
         self.allowed_keys = allowed_keys
-        self.tokenizer = BertTokenizer.from_pretrained(tokenizer_dir)
-        # self.tokenizer = DataPrecessForSingleSentence()
+        # self.tokenizer = BertTokenizer.from_pretrained(tokenizer_dir)
+        self.tokenizer = DataPrecessForSingleSentence()
 
     def __call__(self, data):
         result = {}
         if "review_summary" in data:
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             try:
-                result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
-                                                   padding="max_length", return_tensors="pt")
-                # seq, seq_mask, seq_segment = self.tokenizer.get_input(data["review_summary"])
-                # result['summary'] = dict(seqs=seq, seq_masks=seq_mask, seq_segments=seq_segment)
+                # result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
+                #                                    padding="max_length", return_tensors="pt")
+                seq, seq_mask, seq_segment = self.tokenizer.get_input(data["review_summary"])
+                result['summary'] = dict(seqs=seq, seq_masks=seq_mask, seq_segments=seq_segment)
             except:
                 data["review_summary"] = 'nan'
-                result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
-                                                   padding="max_length", return_tensors="pt")
-                # seq, seq_mask, seq_segment = self.tokenizer.get_input(data["review_summary"])
-                # result['summary'] = dict(seqs=seq, seq_masks=seq_mask, seq_segments=seq_segment)
+                # result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
+                #                                    padding="max_length", return_tensors="pt")
+                seq, seq_mask, seq_segment = self.tokenizer.get_input(data["review_summary"])
+                result['summary'] = dict(seqs=seq, seq_masks=seq_mask, seq_segments=seq_segment)
             # for key in result['summary']:
             #     result['summary'][key] = result['summary'][key].reshape((-1,) + result['summary'][key].shape[2:])
         return result
