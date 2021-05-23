@@ -110,13 +110,13 @@ class DataProcessPipeline:
             try:
                 # result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
                 #                                    padding="max_length", return_tensors="pt")
-                seqs, seq_masks, seq_segments = self.tokenizer(data["review_summary"])
+                seqs, seq_masks, seq_segments = self.tokenizer.get_input(data["review_summary"])
                 result['summary'] = dict(seqs=seqs, seq_masks=seq_masks, seq_segments=seq_segments)
             except:
                 data["review_summary"] = 'nan'
                 # result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
                 #                                    padding="max_length", return_tensors="pt")
-                seqs, seq_masks, seq_segments = self.tokenizer(data["review_summary"])
+                seqs, seq_masks, seq_segments = self.tokenizer.get_input(data["review_summary"])
                 result['summary'] = dict(seqs=seqs, seq_masks=seq_masks, seq_segments=seq_segments)
             # for key in result['summary']:
             #     result['summary'][key] = result['summary'][key].reshape((-1,) + result['summary'][key].shape[2:])
