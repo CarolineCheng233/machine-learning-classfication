@@ -103,7 +103,6 @@ class DataProcessPipeline:
     def __call__(self, data):
         result = {}
         if "review_summary" in data:
-            import pdb; pdb.set_trace()
             try:
                 # result['summary'] = self.tokenizer([data["review_summary"]], truncation=True,
                 #                                    padding="max_length", return_tensors="pt")
