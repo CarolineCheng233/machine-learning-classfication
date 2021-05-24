@@ -83,7 +83,6 @@ class Classifier(nn.Module):
         self.mlp.init_weight()
 
     def forward(self, data):
-        import pdb; pdb.set_trace()
         text = data['text']
         text = self.bert(text)
         output = self.mlp(text)
