@@ -2,6 +2,10 @@ import argparse
 import pandas as pd
 import numpy as np
 from collections import defaultdict
+import re
+from transformers import pipeline
+from sklearn.metrics import f1_score
+from mmcv import ProgressBar
 
 
 def val_split():
@@ -29,14 +33,15 @@ def val_split():
 
 
 def read_val():
-    val = "data/train_split_2.txt"
+    val = "data/train_split.txt"
     file = pd.read_csv(val)
-    data = file.values
-    label = file['fit'].values
-    print(len(data))
-    print(sum(label == 'small') / len(data))
-    print(sum(label == 'fit') / len(data))
-    print(sum(label == 'large') / len(data))
+    # data = file.values
+    import pdb; pdb.set_trace()
+    # label = file['fit'].values
+    # print(len(data))
+    # print(sum(label == 'small') / len(data))
+    # print(sum(label == 'fit') / len(data))
+    # print(sum(label == 'large') / len(data))
 
 
 def train_split():
@@ -146,5 +151,63 @@ def get_text_length():
     print(maximum)
 
 
+def classify_by_text_match(text, label=None):
+    small = re.compile(r'small')
+    large = re.compile(r'large')
+    sent_classifier = pipeline('sentiment-analysis')
+    str2idx = dict(small=0, fit=1, large=2)
+    idx2str = {0: 'small', 1: 'fit', 2: 'large'}
+    result_list = []
+    pb = ProgressBar(len(text))
+    pb.start()
+    for t in text:
+        if not pd.isna(t):
+            result = sent_classifier(t)[0]
+            sent, score = result['label'], result['score']
+            if sent == 'POSITIVE' and score > 0.3:
+                result_list.append(str2idx['fit'])
+            else:
+                if len(small.findall(t)) > 0:
+                    result_list.append(str2idx['small'])
+                elif len(large.findall(t)) > 0:
+                    result_list.append(str2idx['large'])
+                else:
+                    result_list.append(np.random.randint(0, 3))
+        else:
+            result_list.append(np.random.randint(0, 3))
+        pb.update()
+    result_list = np.array(result_list)
+    print()
+    if label is not None:
+        idx_label = []
+        for l in label:
+            idx_label.append(str2idx[l])
+        idx_label = np.array(idx_label)
+        f1 = f1_score(idx_label, result_list, average='macro')
+        print(f'f1 score = {f1}')
+    else:
+        wfile = "data/output.txt"
+        str_result = []
+        for r in result_list:
+            str_result.append(idx2str[r])
+        with open(wfile, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(str_result))
+
+
+def foo():
+    small = re.compile(r'small')
+    text = "mesofjeoifnernf esfjewlokf wedwek;pkpkpsmallwsed wesdew efewf"
+    print(len(small.findall(text)) > 0)
+
+
+def read_data(file, label=False):
+    data = pd.read_csv(file)
+    if label:
+        return data['review_text'].values, data['fit'].values
+    else:
+        return data['review_text'].values
+
+
 if __name__ == '__main__':
-    split_train_val()
+    data, label = read_data('data/val_split.txt', True)
+    classify_by_text_match(data, label)

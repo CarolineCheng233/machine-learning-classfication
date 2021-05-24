@@ -113,12 +113,12 @@ class DataProcessPipeline:
 
 
 class ItemDataset(Dataset):
-    def __init__(self, file_name, pipeline, test_mode=False, allowed_keys=["body type"]):
+    def __init__(self, file_name, pipeline, with_label=False, allowed_keys=["body type"]):
         if 'fit' in allowed_keys:
             allowed_keys.remove('fit')
         self.file_name = file_name
         self.pipeline = pipeline
-        self.test_mode = test_mode
+        self.with_label = with_label
         self.allowed_keys = allowed_keys
         self.data = pd.read_csv(file_name)
         self.data_by_keys = dict()
@@ -126,7 +126,7 @@ class ItemDataset(Dataset):
             self.data_by_keys[key] = self.data[key].values
         self.label2idx = dict(large=0, fit=1, small=2)
         self.idx2label = {0: 'large', 1: 'fit', 2: 'small'}
-        if not test_mode:
+        if with_label:
             self.labels = self.data['fit'].values
             self.one_hot_labels = []
             for label in self.labels:
@@ -140,7 +140,7 @@ class ItemDataset(Dataset):
         result = dict()
         for key in self.allowed_keys:
             result[key] = self.data_by_keys[key][idx]
-        if not self.test_mode:
+        if self.with_label:
             return self.pipeline(result), self.one_hot_labels[idx]
         else:
             return self.pipeline(result)
