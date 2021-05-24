@@ -116,15 +116,14 @@ def resample():
     df.to_csv(output, index=False)
 
 
-def split_train_val_test():
+def split_train_val():
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', type=str, required=True)
     parser.add_argument('--train_file', type=str, required=True)
     parser.add_argument('--val_file', type=str, required=True)
-    parser.add_argument('--test_file', type=str, required=True)
     args = parser.parse_args()
-    file, train_file, val_file, test_file = args.file, args.train_file, args.val_file, args.test_file
-    ratio = np.array([0.7, 0.8, 1.0])
+    file, train_file, val_file = args.file, args.train_file, args.val_file
+    ratio = np.array([0.8, 1.0])
     file = pd.read_csv(file)
     data = file.values
     np.random.shuffle(data)
@@ -132,10 +131,8 @@ def split_train_val_test():
     numbers = (ratio * len(data)).astype(np.int)
     train = pd.DataFrame(data[:numbers[0]], columns=keys)
     val = pd.DataFrame(data[numbers[0]:numbers[1]], columns=keys)
-    test = pd.DataFrame(data[numbers[1]:], columns=keys)
     train.to_csv(train_file, index=False)
     val.to_csv(val_file, index=False)
-    test.to_csv(test_file, index=False)
 
 
 def get_text_length():
@@ -150,4 +147,4 @@ def get_text_length():
 
 
 if __name__ == '__main__':
-    get_text_length()
+    split_train_val()

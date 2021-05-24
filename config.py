@@ -1,6 +1,6 @@
 train_file = "data/train_split.txt"
 val_file = "data/val_split.txt"
-# test_file = "data/test_split.txt"
+test_file = "data/test.txt"
 bert_path = "bert_model"
 ckpt_dir = "ckpt"
 ckpt_name = "best_ckpt.pth"
