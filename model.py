@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from transformers import AutoModel
-from pytorch_pretrained_bert import BertForSequenceClassification
+# from pytorch_pretrained_bert import BertForSequenceClassification
 
 
 class BERT(nn.Module):
@@ -17,7 +17,6 @@ class BERT(nn.Module):
         scratch."""
         if isinstance(self.pretrained, str):
             self.model = AutoModel.from_pretrained(self.pretrained)
-            # 是否要固定住模型
         else:
             raise TypeError('pretrained must be a str')
 
@@ -75,24 +74,19 @@ class Classifier(nn.Module):
     def __init__(self, bert, mlp):
         super().__init__()
         self.bert = bert
-        # self.mlp = mlp
+        self.mlp = mlp
         self.init_weight()
 
     def init_weight(self):
         if isinstance(self.bert, BERT):
             self.bert.init_weight()
-        # self.mlp.init_weight()
+        self.mlp.init_weight()
 
-    def forward(self, summary):
-        # for key in summary:
-        #     summary[key] = summary[key].reshape((-1,) + summary[key].shape[2:])
-        output = None
-        if isinstance(self.bert, BertForSequenceClassification):
-            seqs, seq_masks, seq_segments = summary['seqs'], summary['seq_masks'], summary['seq_segments']
-            output = self.bert(seqs, seq_masks, seq_segments, labels=None)
-        elif isinstance(self.bert, BERT):
-            output = self.bert(summary)
-        # output = self.mlp(output)
+    def forward(self, data):
+        import pdb; pdb.set_trace()
+        text = data['text']
+        text = self.bert(text)
+        output = self.mlp(text)
         return output
 
 

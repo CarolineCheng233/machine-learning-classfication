@@ -49,20 +49,21 @@ from sklearn.metrics import f1_score
 
 
 def train(args):
-    data_pipeline = DataProcessPipeline(args.allowed_keys)
+    data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
     dataset = ItemDataset(args.train_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
                             batch_size=args.batch_size, pin_memory=True, drop_last=False)
 
-    # bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
-    bert = BertForSequenceClassification.from_pretrained(
-        'bert-base-multilingual-cased', num_labels=3)
-    # mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
-    #           last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
-    mlp = None
+    bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
+    # bert = BertForSequenceClassification.from_pretrained(
+    #     'bert-base-multilingual-cased', num_labels=3)
+    mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
+              last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
+    # mlp = None
     model = Classifier(bert, mlp).cuda()
-    optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'])
-    ratio = torch.tensor(args.ratio).cuda()
+    optimizer = optim.SGD(model.parameters(), lr=args.sgd['lr'], momentum=args.sgd['momentum'],
+                          weight_decay=args.sgd['weight_decay'])
+    # ratio = torch.tensor(args.ratio).cuda()
 
     best = 0
     epoch_pb = ProgressBar(args.epochs)
@@ -74,15 +75,15 @@ def train(args):
         iter_pb = ProgressBar(iters)
         iter_pb.start()
         for j, batch in enumerate(dataloader):
-            labels = batch[1].cuda()
-            summaries = batch[0]['summary']
-            for key in summaries:
-                summaries[key] = summaries[key].squeeze().cuda()
             optimizer.zero_grad()
-            output = model(summaries)
-            # output = F.log_softmax(output, dim=1) * ratio
-            # loss = F.nll_loss(output, labels)
-            loss = F.cross_entropy(output, labels)
+
+            data, label = batch
+            label = label.cuda()
+            for key in data['text']:
+                data['text'][key] = data['text'][key].squeeze().cuda()
+            output = model(data)
+
+            loss = F.cross_entropy(output, label)
             if j % args.log['iter'] == 0:
                 print(f'Epoch: {i}, iter: {j} / {iters}, loss: {loss}')
             writer.add_scalar('loss', loss, global_step=i * iters + j + 1)
@@ -106,7 +107,8 @@ def train(args):
 
 def val(model, data_pipeline, args):
     dataset = ItemDataset(args.val_file, data_pipeline, test_mode=True, allowed_keys=args.allowed_keys)
-    dataloader = DataLoader(dataset, shuffle=False, batch_size=args.batch_size, pin_memory=True, drop_last=False)
+    dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=False,
+                            batch_size=args.batch_size, pin_memory=True, drop_last=False)
 
     model.eval()
 
@@ -116,25 +118,27 @@ def val(model, data_pipeline, args):
     val_pb.start()
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
-            label = batch[1].detach().numpy()
-            summaries = batch[0]['summary']
-            for key in summaries:
-                summaries[key] = summaries[key].squeeze().cuda()
-            output = model(summaries).detach().cpu().numpy().argmax(1)
+            data, label = batch
+
+            label = label.detach().numpy()
+            for key in data['text']:
+                data['text'][key] = data['text'][key].squeeze().cuda()
+            output = model(data).detach().cpu().numpy().argmax(1)
+
             results.append(output)
             labels.append(label)
             val_pb.update()
     labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
     score = f1_score(labels, results, average='macro')
-    # accuracy = sum(labels == results) / len(labels)
     return score
 
 
 def test(args):
     data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
-    dataset = ItemDataset(args.test_file, data_pipeline, test_mode=False, allowed_keys=args.allowed_keys)
-    dataloader = DataLoader(dataset, shuffle=False, batch_size=args.batch_size, pin_memory=True, drop_last=False)
+    dataset = ItemDataset(args.test_file, data_pipeline, test_mode=True, allowed_keys=args.allowed_keys)
+    dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=False,
+                            batch_size=args.batch_size, pin_memory=True, drop_last=False)
 
     bert = BERT(pretrained=args.bert_path, freeze=True)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
@@ -144,27 +148,22 @@ def test(args):
     model.eval()
 
     results = []
-    labels = []
     test_pb = ProgressBar(len(dataloader))
     test_pb.start()
     with torch.no_grad():
         for j, batch in enumerate(dataloader):
-            label = batch[1].detach().numpy()
-            summaries = batch[0]['summary']
-            for key in summaries:
-                summaries[key] = summaries[key].cuda()
-            output = model(summaries).detach().cpu().numpy().argmax(1)
+            data = batch
+
+            for key in data['text']:
+                data['text'][key] = data['text'][key].cuda()
+            output = model(data).detach().cpu().numpy().argmax(1)
             results.append(output)
-            labels.append(label)
             test_pb.update()
-    labels = np.concatenate(labels, axis=0)
     results = np.concatenate(results, axis=0)
     if not osp.exists(args.result_dir):
         os.makedirs(args.result_dir)
     with open(osp.join(args.result_dir, args.result_name), 'w', encoding='utf-8') as f:
         f.write('\n'.join([dataset.idx2label[result] for result in results]))
-    score = f1_score(labels, results, average='macro')
-    return score
 
 
 def main():
@@ -172,8 +171,7 @@ def main():
     if args.mode == 'train':
         train(args)
     else:
-        accuracy = test(args)
-        print(f'test accuracy : {accuracy}')
+        test(args)
 
 
 if __name__ == '__main__':
