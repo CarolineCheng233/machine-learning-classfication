@@ -214,17 +214,8 @@ def train_word_vec(text):
 
 def get_word2vec():
     model = api.load("word2vec-google-news-300")
-    vector = model.wv.get_vector('test')
+    vector = model['test']
     print(vector)
-
-
-def foo():
-    print('foo')
-    model = api.load('word2vec-google-news-300')
-    # Word2Vec(sentences, min_count=1)
-    # vector = model.wv('test')
-    vector = model('test')
-    print(vector.shape)
 
 
 def read_data(file, label=False):
