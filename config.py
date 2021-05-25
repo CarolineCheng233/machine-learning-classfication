@@ -25,7 +25,7 @@ last_w_bnact = False
 last_w_softmax = False
 
 
-sgd = dict(lr=2e-5, momentum=0.9, weight_decay=0.0005)
+sgd = dict(lr=2e-4, momentum=0.9, weight_decay=0.0005)
 
 log = dict(iter=20)
 log_path = "log"
