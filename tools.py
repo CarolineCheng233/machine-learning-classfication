@@ -214,7 +214,7 @@ def train_word_vec(text):
 
 def get_word2vec():
     model = api.load("glove-twitter-25")
-    vector = model.wv('test')
+    vector = model.wv.get_vector('test')
     print(vector)
 
 
