@@ -11,7 +11,8 @@ batch_size = 512
 num_workers = 10
 epochs = 50
 save_model = True
-load_from_ckpt = False
+load_from_ckpt = True
+best = 0.47
 
 ratio = [5.75, 1, 5.75]
 gamma = 2

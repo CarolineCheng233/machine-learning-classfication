@@ -66,7 +66,7 @@ def train(args):
                           weight_decay=args.sgd['weight_decay'])
     # ratio = torch.tensor(args.ratio).cuda()
 
-    best = 0
+    best = args.best
     epoch_pb = ProgressBar(args.epochs)
     epoch_pb.start()
     writer = SummaryWriter(args.log_path)
