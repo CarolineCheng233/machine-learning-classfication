@@ -86,10 +86,9 @@ def train(args):
             label = label.cuda()
             # for key in data['text']:
             #     data['text'][key] = data['text'][key].squeeze().cuda()
-            # output = model(data)
-            import pdb; pdb.set_trace()
             data['text'] = data['text'].cuda()
-            output = model(data['text'])
+
+            output = model(data)
 
             loss = F.cross_entropy(output, label)
             if j % args.log['iter'] == 0:
@@ -131,6 +130,7 @@ def val(model, data_pipeline, args):
             label = label.detach().numpy()
             # for key in data['text']:
             #     data['text'][key] = data['text'][key].squeeze().cuda()
+            data['text'] = data['text'].cuda()
             output = model(data).detach().cpu().numpy().argmax(1)
 
             results.append(output)
@@ -163,8 +163,9 @@ def test(args):
         for j, batch in enumerate(dataloader):
             data = batch
 
-            for key in data['text']:
-                data['text'][key] = data['text'][key].squeeze().cuda()
+            # for key in data['text']:
+            #     data['text'][key] = data['text'][key].squeeze().cuda()
+            data['text'] = data['text'].cuda()
             output = model(data).detach().cpu().numpy().argmax(1)
             results.append(output)
             test_pb.update()
