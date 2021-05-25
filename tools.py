@@ -246,4 +246,4 @@ if __name__ == '__main__':
     # get_word2vec()
     # print(total.shape)
     # foo()
-    foo()
+    get_word2vec()
