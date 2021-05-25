@@ -6,7 +6,9 @@ import re
 from transformers import pipeline
 from sklearn.metrics import f1_score
 from mmcv import ProgressBar
-import gensim.downloader
+import gensim.downloader as api
+from nltk.tokenize import sent_tokenize, word_tokenize
+import nltk
 
 
 def val_split():
@@ -195,8 +197,30 @@ def classify_by_text_match(text, label=None):
             f.write('\n'.join(str_result))
 
 
+def train_word_vec(text):
+    # data = []
+    # for i in sent_tokenize(text):
+    #     temp = []
+    #     import pdb; pdb.set_trace()
+    #     # tokenize the sentence into words
+    #     for j in word_tokenize(i):
+    #         temp.append(j.lower())
+    #
+    #     data.append(temp)
+    # model1 = gensim.models.Word2Vec(data, min_count=1,
+    #                                 size=100, window=5)
+    pass
+
+
+def get_word2vec():
+    model = api.load("glove-twitter-25")
+    vector = model.wv('test')
+    print(vector)
+
+
 def foo():
-    model = gensim.downloader.load('word2vec-google-news-300')
+    print('foo')
+    model = api.load('word2vec-google-news-300')
     # Word2Vec(sentences, min_count=1)
     vector = model.wv('test')
     print(vector.shape)
@@ -213,5 +237,11 @@ def read_data(file, label=False):
 if __name__ == '__main__':
     # data, label = read_data('data/val_split.txt', True)
     # classify_by_text_match(data, label)
-
-    foo()
+    nltk.download('punkt')
+    train = read_data('data/train.txt')
+    test = read_data('data/test.txt')
+    total = np.concatenate((train, test))
+    train_word_vec(total)
+    # get_word2vec()
+    # print(total.shape)
+    # foo()

@@ -1,5 +1,5 @@
 from opts import parse
-from data import DataProcessPipeline, ItemDataset
+from data import DataProcessPipeline, ItemDataset, Word2VecPipeline
 from torch.utils.data import DataLoader
 from model import BERT, MLP, Classifier
 import torch.optim as optim
@@ -49,7 +49,7 @@ from sklearn.metrics import f1_score
 
 
 def train(args):
-    data_pipeline = DataProcessPipeline(args.bert_path, args.allowed_keys)
+    data_pipeline = Word2VecPipeline()
     dataset = ItemDataset(args.train_file, data_pipeline, with_label=True, allowed_keys=args.allowed_keys)
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
                             batch_size=args.batch_size, pin_memory=True, drop_last=False)
@@ -159,7 +159,7 @@ def test(args):
             data = batch
 
             for key in data['text']:
-                data['text'][key] = data['text'][key].cuda()
+                data['text'][key] = data['text'][key].squeeze().cuda()
             output = model(data).detach().cpu().numpy().argmax(1)
             results.append(output)
             test_pb.update()

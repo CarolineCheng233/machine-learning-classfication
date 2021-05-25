@@ -9,6 +9,7 @@ import nltk
 import gensim
 from nltk.tokenize import sent_tokenize, word_tokenize
 from gensim.models import Word2Vec
+import gensim.downloader as api
 
 
 def read():
@@ -119,10 +120,22 @@ class DataProcessPipeline:
 class Word2VecPipeline:
 
     def __init__(self):
-        pass
+        self.tokenizer = api.load('word2vec-google-news-300')
 
-    def __call__(self, *args, **kwargs):
-        pass
+    def __call__(self, data):
+        result = {}
+        if "review_text" in data:
+            text = data["review_text"]
+            if pd.isna(text):
+                text = 'nan'
+            vector = np.zeros(300)
+            for word in text.split():
+                word_vec = self.tokenizer.wv(word)
+                vector += word_vec
+            vector = vector / len(text.split())
+            result['text'] = vector
+
+        return result
 
 
 class ItemDataset(Dataset):
