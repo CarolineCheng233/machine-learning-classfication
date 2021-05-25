@@ -222,7 +222,8 @@ def foo():
     print('foo')
     model = api.load('word2vec-google-news-300')
     # Word2Vec(sentences, min_count=1)
-    vector = model.wv('test')
+    # vector = model.wv('test')
+    vector = model('test')
     print(vector.shape)
 
 
@@ -237,11 +238,12 @@ def read_data(file, label=False):
 if __name__ == '__main__':
     # data, label = read_data('data/val_split.txt', True)
     # classify_by_text_match(data, label)
-    nltk.download('punkt')
-    train = read_data('data/train.txt')
-    test = read_data('data/test.txt')
-    total = np.concatenate((train, test))
-    train_word_vec(total)
+    # nltk.download('punkt')
+    # train = read_data('data/train.txt')
+    # test = read_data('data/test.txt')
+    # total = np.concatenate((train, test))
+    # train_word_vec(total)
     # get_word2vec()
     # print(total.shape)
     # foo()
+    foo()
