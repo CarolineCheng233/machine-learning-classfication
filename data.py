@@ -130,7 +130,7 @@ class Word2VecPipeline:
                 text = 'nan'
             vector = np.zeros(300)
             for word in text.split():
-                word_vec = self.tokenizer.wv(word)
+                word_vec = self.tokenizer[word]
                 vector += word_vec
             vector = vector / len(text.split())
             result['text'] = vector
