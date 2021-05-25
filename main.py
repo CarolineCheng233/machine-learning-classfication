@@ -69,6 +69,10 @@ def train(args):
     epoch_pb = ProgressBar(args.epochs)
     epoch_pb.start()
     writer = SummaryWriter(args.log_path)
+
+    if args.load_from_ckpt:
+        model.load_state_dict(torch.load(args.ckpt_dir, args.ckpt_name))
+
     for i in range(args.epochs):
         model.train()
         iters = len(dataloader)
