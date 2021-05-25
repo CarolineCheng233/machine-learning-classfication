@@ -9,7 +9,7 @@ result_name = "word2vec_test_results.txt"
 allowed_keys = ["review_text"]
 batch_size = 512
 num_workers = 10
-epochs = 20
+epochs = 50
 save_model = True
 load_from_ckpt = False
 
