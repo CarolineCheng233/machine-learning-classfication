@@ -213,7 +213,7 @@ def train_word_vec(text):
 
 
 def get_word2vec():
-    model = api.load("glove-twitter-25")
+    model = api.load("word2vec-google-news-300")
     vector = model.wv.get_vector('test')
     print(vector)
 
@@ -236,14 +236,4 @@ def read_data(file, label=False):
 
 
 if __name__ == '__main__':
-    # data, label = read_data('data/val_split.txt', True)
-    # classify_by_text_match(data, label)
-    # nltk.download('punkt')
-    # train = read_data('data/train.txt')
-    # test = read_data('data/test.txt')
-    # total = np.concatenate((train, test))
-    # train_word_vec(total)
-    # get_word2vec()
-    # print(total.shape)
-    # foo()
     get_word2vec()
