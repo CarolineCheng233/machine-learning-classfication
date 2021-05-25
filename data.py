@@ -5,6 +5,10 @@ from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer
 from concurrent.futures import ThreadPoolExecutor
 import torch
+import nltk
+import gensim
+from nltk.tokenize import sent_tokenize, word_tokenize
+from gensim.models import Word2Vec
 
 
 def read():
@@ -110,6 +114,15 @@ class DataProcessPipeline:
             result['text'] = self.tokenizer(text, truncation=True, max_length=64,
                                             padding="max_length", return_tensors="pt")
         return result
+
+
+class Word2VecPipeline:
+
+    def __init__(self):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        pass
 
 
 class ItemDataset(Dataset):

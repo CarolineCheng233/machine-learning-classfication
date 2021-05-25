@@ -6,6 +6,7 @@ import re
 from transformers import pipeline
 from sklearn.metrics import f1_score
 from mmcv import ProgressBar
+import gensim.downloader
 
 
 def val_split():
@@ -195,9 +196,10 @@ def classify_by_text_match(text, label=None):
 
 
 def foo():
-    small = re.compile(r'small')
-    text = "mesofjeoifnernf esfjewlokf wedwek;pkpkpsmallwsed wesdew efewf"
-    print(len(small.findall(text)) > 0)
+    model = gensim.downloader.load('word2vec-google-news-300')
+    # Word2Vec(sentences, min_count=1)
+    vector = model.wv('test')
+    print(vector.shape)
 
 
 def read_data(file, label=False):
@@ -209,5 +211,7 @@ def read_data(file, label=False):
 
 
 if __name__ == '__main__':
-    data, label = read_data('data/val_split.txt', True)
-    classify_by_text_match(data, label)
+    # data, label = read_data('data/val_split.txt', True)
+    # classify_by_text_match(data, label)
+
+    foo()

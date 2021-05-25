@@ -71,7 +71,7 @@ def train(args):
     writer = SummaryWriter(args.log_path)
 
     if args.load_from_ckpt:
-        model.load_state_dict(torch.load(args.ckpt_dir, args.ckpt_name))
+        model.load_state_dict(torch.load(osp.join(args.ckpt_dir, args.ckpt_name)))
 
     for i in range(args.epochs):
         model.train()
