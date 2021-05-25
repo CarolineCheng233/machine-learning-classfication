@@ -63,7 +63,6 @@ class MLP(nn.Module):
                 nn.init.normal_(layer.weight, std=0.02)
 
     def forward(self, x):
-        import pdb; pdb.set_trace()
         out = self.model(x)
         if self.last_w_softmax:
             out = self.softmax(out)
@@ -85,7 +84,6 @@ class Classifier(nn.Module):
             self.mlp.init_weight()
 
     def forward(self, data):
-        import pdb; pdb.set_trace()
         text = data['text']
         output = None
         if self.bert is not None:

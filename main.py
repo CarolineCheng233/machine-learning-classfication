@@ -87,7 +87,6 @@ def train(args):
             # for key in data['text']:
             #     data['text'][key] = data['text'][key].squeeze().cuda()
             data['text'] = data['text'].cuda()
-            import pdb; pdb.set_trace()
 
             output = model(data)
 
