@@ -17,7 +17,7 @@ ratio = [5.75, 1, 5.75]
 gamma = 2
 
 bert_freeze = False
-mlp_dims = (768, 3)
+mlp_dims = (300, 512, 3)
 mlp_layer_num = len(mlp_dims) - 1
 with_bn = True
 act_type = 'relu'

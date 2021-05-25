@@ -71,21 +71,25 @@ class MLP(nn.Module):
 
 class Classifier(nn.Module):
     # bert, mlp
-    def __init__(self, bert, mlp):
+    def __init__(self, bert=None, mlp=None):
         super().__init__()
         self.bert = bert
         self.mlp = mlp
         self.init_weight()
 
     def init_weight(self):
-        if isinstance(self.bert, BERT):
+        if self.bert is not None and isinstance(self.bert, BERT):
             self.bert.init_weight()
-        self.mlp.init_weight()
+        if self.mlp is not None:
+            self.mlp.init_weight()
 
     def forward(self, data):
         text = data['text']
-        text = self.bert(text)
-        output = self.mlp(text)
+        output = None
+        if self.bert is not None:
+            text = self.bert(text)
+        if self.mlp is not None:
+            output = self.mlp(text)
         return output
 
 

@@ -54,7 +54,8 @@ def train(args):
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=True,
                             batch_size=args.batch_size, pin_memory=True, drop_last=False)
 
-    bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
+    # bert = BERT(pretrained=args.bert_path, freeze=args.bert_freeze)
+    bert = None
     # bert = BertForSequenceClassification.from_pretrained(
     #     'bert-base-multilingual-cased', num_labels=3)
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
@@ -83,9 +84,12 @@ def train(args):
 
             data, label = batch
             label = label.cuda()
-            for key in data['text']:
-                data['text'][key] = data['text'][key].squeeze().cuda()
-            output = model(data)
+            # for key in data['text']:
+            #     data['text'][key] = data['text'][key].squeeze().cuda()
+            # output = model(data)
+            import pdb; pdb.set_trace()
+            data['text'] = data['text'].cuda()
+            output = model(data['text'])
 
             loss = F.cross_entropy(output, label)
             if j % args.log['iter'] == 0:
@@ -125,8 +129,8 @@ def val(model, data_pipeline, args):
             data, label = batch
 
             label = label.detach().numpy()
-            for key in data['text']:
-                data['text'][key] = data['text'][key].squeeze().cuda()
+            # for key in data['text']:
+            #     data['text'][key] = data['text'][key].squeeze().cuda()
             output = model(data).detach().cpu().numpy().argmax(1)
 
             results.append(output)
@@ -144,7 +148,8 @@ def test(args):
     dataloader = DataLoader(dataset, num_workers=args.num_workers, shuffle=False,
                             batch_size=args.batch_size, pin_memory=True, drop_last=False)
 
-    bert = BERT(pretrained=args.bert_path, freeze=True)
+    # bert = BERT(pretrained=args.bert_path, freeze=True)
+    bert = None
     mlp = MLP(layer_num=args.mlp_layer_num, dims=args.mlp_dims, with_bn=args.with_bn, act_type=args.act_type,
               last_w_bnact=args.last_w_bnact, last_w_softmax=args.last_w_softmax)
     model = Classifier(bert, mlp).cuda()
