@@ -128,14 +128,14 @@ class Word2VecPipeline:
             text = data["review_text"]
             if pd.isna(text):
                 text = 'nan'
-            vector = np.zeros(300)
+            vector = np.zeros(300, dtype=np.float32)
             for word in text.split():
                 try:
                     word_vec = self.tokenizer[word]
                 except:
                     word_vec = np.zeros(300)
                 vector += word_vec
-            vector = vector / len(text.split())
+            vector = (vector / len(text.split())).astype(np.float32)
             result['text'] = vector
 
         return result

@@ -197,27 +197,6 @@ def classify_by_text_match(text, label=None):
             f.write('\n'.join(str_result))
 
 
-def train_word_vec(text):
-    # data = []
-    # for i in sent_tokenize(text):
-    #     temp = []
-    #     import pdb; pdb.set_trace()
-    #     # tokenize the sentence into words
-    #     for j in word_tokenize(i):
-    #         temp.append(j.lower())
-    #
-    #     data.append(temp)
-    # model1 = gensim.models.Word2Vec(data, min_count=1,
-    #                                 size=100, window=5)
-    pass
-
-
-def get_word2vec():
-    model = api.load("word2vec-google-news-300")
-    vector = model['test']
-    print(vector)
-
-
 def read_data(file, label=False):
     data = pd.read_csv(file)
     if label:
@@ -226,5 +205,11 @@ def read_data(file, label=False):
         return data['review_text'].values
 
 
+def foo():
+    a = np.zeros((10, 2), dtype=np.float32)
+    b = (a / 10).astype(np.float32)
+    print(b.dtype)
+
+
 if __name__ == '__main__':
-    get_word2vec()
+    foo()
